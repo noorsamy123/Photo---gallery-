@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>معرض الصور</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --light: #f8fafc;
+            --dark: #1e293b;
+            --card-bg: #ffffff;
+            --text: #334155;
+            --shadow: rgba(0, 0, 0, 0.1);
+        }
+        
+        .dark-mode {
+            --primary: #818cf8;
+            --light: #0f172a;
+            --dark: #f1f5f9;
+            --card-bg: #1e293b;
+            --text: #cbd5e1;
+            --shadow: rgba(0, 0, 0, 0.3);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            transition: background 0.3s, color 0.3s;
+        }
+        
+        body {
+            background: var(--light);
+            color: var(--text);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* الهيدر */
+        header {
+            text-align: center;
+            padding: 30px 0;
+            border-bottom: 2px solid var(--primary);
+            margin-bottom: 40px;
+        }
+        
+        h1 {
+            color: var(--primary);
+            font-size: 2.8rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.8;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        /* أدوات التحكم */
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 20px;
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px var(--shadow);
+        }
+        
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .filter-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        
+        .filter-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+        
+        .filter-btn.active {
+            background: var(--dark);
+            color: var(--light);
+        }
+        
+        .dark-mode-toggle {
+            background: none;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+        
+        .dark-mode-toggle:hover {
+            background: var(--primary);
+            color: white;
+        }
+        
+        /* معرض الصور */
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+        
+        .gallery-item {
+            background: var(--card-bg);
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 20px var(--shadow);
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .gallery-item:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px var(--shadow);
+        }
+        
+        .image-container {
+            width: 100%;
+            height: 200px;
+            overflow: hidden;
+        }
+        
+        .gallery-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s;
+        }
+        
+        .gallery-item:hover .gallery-image {
+            transform: scale(1.1);
+        }
+        
+        .image-info {
+            padding: 20px;
+        }
+        
+        .image-title {
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+            color: var(--primary);
+        }
+        
+        .image-category {
+            display: inline-block;
+            background: var(--primary);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+        
+        .image-description {
+            font-size: 0.95rem;
+            line-height: 1.5;
+            opacity: 0.9;
+        }
+        
+        /* المودال */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .modal-content {
+            background: var(--card-bg);
+            max-width: 800px;
+            width: 100%;
+            border-radius: 20px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .modal-image {
+            width: 100%;
+            max-height: 500px;
+            object-fit: contain;
+            background: var(--dark);
+        }
+        
+        .modal-info {
+            padding: 30px;
+        }
+        
+        .close-modal {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1001;
+        }
+        
+        /* الفوتر */
+        footer {
+            text-align: center;
+            padding: 30px 0;
+            border-top: 1px solid var(--primary);
+            margin-top: 50px;
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        /* التجاوب */
+        @media (max-width: 768px) {
+            .gallery {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+                gap: 20px;
+            }
+            
+            h1 {
+                font-size: 2.2rem;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .gallery {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                padding: 15px;
+            }
+        }
+        
+        /* الأنيميشن */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-images"></i> معرض الصور التفاعلي</h1>
+            <p class="subtitle">تصفح مجموعة من الصور المميزة مع إمكانية التصفية حسب التصنيف والتبديل بين الوضع المضيء والمظلم</p>
+        </header>
+        
+        <div class="controls">
+            <div class="filter-buttons">
+                <button class="filter-btn active" data-filter="all">الكل</button>
+                <button class="filter-btn" data-filter="طبيعة">الطبيعة</button>
+                <button class="filter-btn" data-filter="مدن">المدن</button>
+                <button class="filter-btn" data-filter="تقنية">التقنية</button>
+                <button class="filter-btn" data-filter="فن">الفن</button>
+            </div>
+            
+            <button class="dark-mode-toggle" id="darkModeToggle">
+                <i class="fas fa-moon"></i>
+            </button>
+        </div>
+        
+        <div class="gallery" id="gallery">
+            <!-- الصور تضاف عن طريق JavaScript -->
+        </div>
+        
+        <footer>
+            <p>© 2023 معرض الصور التفاعلي | تم التطوير باستخدام HTML, CSS, JavaScript</p>
+            <p>جميع الصور لأغراض عرضية فقط</p>
+        </footer>
+    </div>
+    
+    <!-- المودال -->
+    <div class="modal" id="imageModal">
+        <div class="modal-content">
+            <button class="close-modal" id="closeModal">
+                <i class="fas fa-times"></i>
+            </button>
+            <img class="modal-image" id="modalImage" src="" alt="">
+            <div class="modal-info">
+                <h2 id="modalTitle"></h2>
+                <span class="image-category" id="modalCategory"></span>
+                <p id="modalDescription"></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // بيانات الصور
+        const images = [
+            {
+                id: 1,
+                title: "الغابة السحرية",
+                category: "طبيعة",
+                description: "غابة خضراء مليئة بالأشجار العالية وأشعة الشمس المتخللة بين الأوراق.",
+                color: "#10b981"
+            },
+            {
+                id: 2,
+                title: "نيويورك ليلاً",
+                category: "مدن",
+                description: "أضواء المباني في مدينة نيويورك تلمع في سماء الليل.",
+                color: "#3b82f6"
+            },
+            {
+                id: 3,
+                title: "الحواسيب الحديثة",
+                category: "تقنية",
+                description: "أحدث أجهزة الحواسيب المحمولة مع تصميم أنيق وشاشات عالية الدقة.",
+                color: "#8b5cf6"
+            },
+            {
+                id: 4,
+                title: "اللوحة الفنية",
+                category: "فن",
+                description: "لوحة فنية تجريدية تجمع بين الألوان الزاهية والأشكال الهندسية.",
+                color: "#ec4899"
+            },
+            {
+                id: 5,
+                title: "الشلال المتجمد",
+                category: "طبيعة",
+                description: "شلال جبلي يتجمد جزئياً في فصل الشتاء مشكلاً منظراً طبيعياً خلاباً.",
+                color: "#06b6d4"
+            },
+            {
+                id: 6,
+                title: "دبي من الأعلى",
+                category: "مدن",
+                description: "منظر جوي لمدينة دبي يظهر برج خليفة والمباني الحديثة.",
+                color: "#f59e0b"
+            },
+            {
+                id: 7,
+                title: "الواقع الافتراضي",
+                category: "تقنية",
+                description: "نظارات الواقع الافتراضي تفتح أبواباً لعوالم رقمية جديدة.",
+                color: "#84cc16"
+            },
+            {
+                id: 8,
+                title: "النحت الحديث",
+                category: "فن",
+                description: "تمثال حديث يجمع بين الأشكال العضوية والخطوط الهندسية.",
+                color: "#ef4444"
+            },
+            {
+                id: 9,
+                title: "الصحراء الذهبية",
+                category: "طبيعة",
+                description: "الكثبان الرملية الذهبية تمتد إلى الأفق تحت سماء زرقاء صافية.",
+                color: "#d97706"
+            }
+        ];
+        
+        // عناصر DOM
+        const gallery = document.getElementById('gallery');
+        const filterButtons = document.querySelectorAll('.filter-btn');
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const imageModal = document.getElementById('imageModal');
+        const modalImage = document.getElementById('modalImage');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalCategory = document.getElementById('modalCategory');
+        const modalDescription = document.getElementById('modalDescription');
+        const closeModal = document.getElementById('closeModal');
+        
+        // توليد ألوان عشوائية للخلفيات
+        function generateGradient(color) {
+            return `linear-gradient(135deg, ${color}20, ${color}40)`;
+        }
+        
+        // عرض الصور
+        function displayImages(filter = 'all') {
+            gallery.innerHTML = '';
+            
+            const filteredImages = filter === 'all' 
+                ? images 
+                : images.filter(img => img.category === filter);
+            
+            filteredImages.forEach(image => {
+                const galleryItem = document.createElement('div');
+                galleryItem.className = 'gallery-item fade-in';
+                galleryItem.setAttribute('data-category', image.category);
+                
+                galleryItem.innerHTML = `
+                    <div class="image-container" style="background: ${generateGradient(image.color)}">
+                        <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: ${image.color}; font-size: 3rem;">
+                            <i class="fas fa-image"></i>
+                        </div>
+                    </div>
+                    <div class="image-info">
+                        <h3 class="image-title">${image.title}</h3>
+                        <span class="image-category" style="background: ${image.color}">${image.category}</span>
+                        <p class="image-description">${image.description}</p>
+                    </div>
+                `;
+                
+                galleryItem.addEventListener('click', () => openModal(image));
+                gallery.appendChild(galleryItem);
+            });
+        }
+        
+        // فتح المودال
+        function openModal(image) {
+            modalImage.style.backgroundColor = image.color + '20';
+            modalTitle.textContent = image.title;
+            modalCategory.textContent = image.category;
+            modalCategory.style.backgroundColor = image.color;
+            modalDescription.textContent = image.description;
+            
+            // تأثير الصورة في المودال
+            modalImage.innerHTML = `
+                <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: ${image.color}; font-size: 5rem;">
+                    <i class="fas fa-image"></i>
+                </div>
+            `;
+            
+            imageModal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+        
+        // إغلاق المودال
+        function closeImageModal() {
+            imageModal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+        
+        // التبديل بين الوضع المظلم والمضيء
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            const icon = darkModeToggle.querySelector('i');
+            
+            if (document.body.classList.contains('dark-mode')) {
+                icon.className = 'fas fa-sun';
+                darkModeToggle.setAttribute('title', 'الوضع المضيء');
+            } else {
+                icon.className = 'fas fa-moon';
+                darkModeToggle.setAttribute('title', 'الوضع المظلم');
+            }
+            
+            // حفظ التفضيل
+            localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
+        }
+        
+        // تصفية الصور
+        function filterImages(e) {
+            // إزالة النشط من جميع الأزرار
+            filterButtons.forEach(btn => btn.classList.remove('active'));
+            
+            // إضافة النشط للزر المضغوط
+            e.target.classList.add('active');
+            
+            // عرض الصور المصفاة
+            const filter = e.target.getAttribute('data-filter');
+            displayImages(filter);
+        }
+        
+        // تهيئة التطبيق
+        function initApp() {
+            // عرض جميع الصور أولاً
+            displayImages();
+            
+            // تحميل تفضيل الوضع المظلم
+            if (localStorage.getItem('darkMode') === 'true') {
+                document.body.classList.add('dark-mode');
+                darkModeToggle.querySelector('i').className = 'fas fa-sun';
+            }
+            
+            // أحداث الأزرار
+            filterButtons.forEach(button => {
+                button.addEventListener('click', filterImages);
+            });
+            
+            darkModeToggle.addEventListener('click', toggleDarkMode);
+            closeModal.addEventListener('click', closeImageModal);
+            
+            // إغلاق المودال بالضغط خارج المحتوى
+            imageModal.addEventListener('click', (e) => {
+                if (e.target === imageModal) {
+                    closeImageModal();
+                }
+            });
+            
+            // إغلاق المودال بمفتاح Esc
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    closeImageModal();
+                }
+            });
+        }
+        
+        // بدء التطبيق
+        document.addEventListener('DOMContentLoaded', initApp);
+        
+        // تأثير عند تحميل الصفحة
+        window.addEventListener('load', () => {
+            document.body.style.opacity = '0';
+            document.body.style.transition = 'opacity 0.5s';
+            
+            setTimeout(() => {
+                document.body.style.opacity = '1';
+            }, 100);
+        });
+    </script>
+</body>
+  </html>
